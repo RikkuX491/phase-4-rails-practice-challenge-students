@@ -30,7 +30,13 @@ class StudentsController < ApplicationController
     def update
         student = Student.find_by(id: params[:id])
         if student
-            student.update(name: params[:name], major: params[:major], age: params[:age], instructor_id: params[:instructor_id])
+            if params[:instructor_id]
+                instructor = Instructor.find_by(id: params[:instructor_id])
+                if !instructor
+                    return render json: { error: "Invalid Instructor ID! Instructor Not Found!" }, status: :not_found
+                end
+            end
+            student.update(student_params)
             if student.valid?
                 render json: student, status: :ok
             else
@@ -49,5 +55,11 @@ class StudentsController < ApplicationController
         else
             render json: { error: "Student Not Found!" }, status: :not_found
         end
+    end
+
+    private
+
+    def student_params
+        params.permit(:name, :major, :age, :instructor_id)
     end
 end
